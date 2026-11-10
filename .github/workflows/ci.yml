@@ -72,6 +72,39 @@ jobs:
           path: release/*
           if-no-files-found: error
 
+  e2e:
+    name: Chromium end to end
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm --dir e2e exec playwright install --with-deps chromium
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test the extension and MCP server
+        run: pnpm e2e
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: e2e-failure
+          path: e2e/results/
+          if-no-files-found: ignore
+
   release:
     name: GitHub release
     needs: build

@@ -252,8 +252,9 @@ sites.
 | Accepted | you | done |
 
 The agent can only set **In progress** and **Review ready**. Removals and edits are
-shown as a preview while the status is Open or In progress. When the agent marks it
-Review ready the preview turns off, so you see what the code really does now.
+shown as a preview while the status is Open or In progress. Saving an edit keeps
+both its text and CSS preview in place. When the agent marks it Review ready the
+preview turns off, so you see what the code really does now.
 **Undo removal** / **Undo edit** brings the element back and drops the task.
 
 ### MCP tools
@@ -378,9 +379,41 @@ Run these before committing (CI runs the same):
 
 ```sh
 pnpm typecheck
-pnpm test               # all tests (the MCP one runs it over stdio like Claude Code)
+pnpm test               # fast unit and stdio tests; no browser needed
 pnpm build              # extension/dist, extension/dist-firefox, server/dist/cli.js
 ```
+
+### End-to-end tests (Chromium)
+
+```sh
+pnpm install
+pnpm --dir e2e exec playwright install chromium
+pnpm build
+pnpm e2e
+```
+
+The separate `node --test` suite uses the Playwright library to load the real built
+extension into full Chromium, serve the demo on a free loopback port, and connect
+a real MCP stdio client to `server/dist/cli.js`. It covers picking and sending a
+comment with a PNG, the agent reply/solution/acceptance round trip, edit/removal
+previews and undo, panel listing and focus, screenshots without previews, and the
+extension reload notice. `pnpm test` does not run it.
+
+Port **127.0.0.1:4777 must be free**: stop other Browser Review MCP sessions first.
+The suite fails rather than using another session's bridge. Cases run serially,
+each with a fresh temporary browser profile; the browser, demo and MCP process
+are closed afterwards. It never uses your normal browser profile or port 5173.
+
+Chromium runs headless by default; set `E2E_HEADED=1` to watch it. On Linux,
+`pnpm --dir e2e exec playwright install --with-deps chromium` also installs the
+system libraries. CI runs this as a separate job. Failures save screenshots,
+Playwright traces and MCP stderr under `e2e/results/` (uploaded by CI); inspect a
+trace with `pnpm --dir e2e exec playwright show-trace results/<case>/trace.zip`.
+
+The panel is loaded directly at its `chrome-extension://` URL in a background tab,
+so the demo remains the active tab it follows. This exercises the real panel UI,
+not Chromium's native side-panel opening gesture. Firefox is out of scope for
+this suite and is checked by hand.
 
 ## License
 

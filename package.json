@@ -20,6 +20,7 @@
     "publish:mcp": "pnpm --dir server publish",
     "typecheck": "pnpm -r typecheck",
     "test": "node --test \"scripts/**/*.test.ts\" && pnpm -r test",
+    "e2e": "pnpm --dir e2e e2e",
     "version:bump": "node scripts/version.ts bump",
     "version:sync": "node scripts/version.ts sync",
     "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true"
