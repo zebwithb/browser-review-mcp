@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Browser Review",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Comment on, remove and edit elements of your dev app. Your coding agent picks the comments up over MCP and fixes them.",
   "minimum_chrome_version": "120",
   "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" },

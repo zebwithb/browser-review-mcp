@@ -1,6 +1,6 @@
 {
   "name": "browser-review-mcp",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "license": "MIT",
   "description": "MCP server for the Browser Review extension: Claude Code reads, fixes and resolves the review comments you leave on your localhost app.",
   "keywords": [

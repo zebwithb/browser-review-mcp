@@ -115,6 +115,7 @@ export class Previews {
     const next = new Map<string, Applied>();
     const rules: string[] = [];
     const ours = new Map<Text, TextEdit>();
+    const retained = new Set<Text>();
     for (const a of this.#applied.values()) for (const t of a.texts) ours.set(t.node, t);
 
     for (const entry of wanted) {
@@ -133,6 +134,7 @@ export class Previews {
         const css = importantCss(entry.change.css);
         if (css) rules.push(`${sel} { ${css}; }`);
         applied.texts = this.#applyTexts(el, entry.change.texts, ours);
+        for (const t of applied.texts) retained.add(t.node);
       }
       next.set(entry.key, applied);
     }
@@ -140,12 +142,9 @@ export class Previews {
     // Undo whatever is no longer wanted (or moved to another element).
     for (const [key, old] of this.#applied) {
       const now = next.get(key);
-      if (now?.el === old.el) {
-        // Same element: restore only text nodes that are no longer part of the edit.
-        for (const t of old.texts) if (!now.texts.some((n) => n.node === t.node)) restoreText(t);
-        continue;
-      }
-      for (const t of old.texts) restoreText(t);
+      // A saved edit can take over the draft's text nodes under a different key.
+      for (const t of old.texts) if (!retained.has(t.node)) restoreText(t);
+      if (now?.el === old.el) continue;
       const tokens = (old.el.getAttribute(ATTR) ?? '').split(/\s+/).filter((t) => t && t !== key);
       if (tokens.length) old.el.setAttribute(ATTR, tokens.join(' '));
       else old.el.removeAttribute(ATTR);
